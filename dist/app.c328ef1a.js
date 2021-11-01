@@ -119,11 +119,14 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   return newRequire;
 })({"app.js":[function(require,module,exports) {
 // XMLHttpRequest()가 반환한 값을 변수 ajax에 입력.
-var ajax = new XMLHttpRequest(); // 비동기적으로 가져오지 않고, 동기적으로 가져오기 위해서 false 사용. true적으면 비동기적
+var container = document.getElementById('root');
+var ajax = new XMLHttpRequest();
+var content = document.createElement('div'); // 비동기적으로 가져오지 않고, 동기적으로 가져오기 위해서 false 사용. true적으면 비동기적
 
-newsUrl = 'https://api.hnpwa.com/v0/news/1.json';
-ajax.open('GET', newsUrl, false); // 데이터를 가져오기 위해 ajax.send() 사용
+var NEWS_URL = 'https://api.hnpwa.com/v0/news/1.json';
+var CONTENT_URL = 'https://api.hnpwa.com/v0/item/@id.json'; // event시스템 브라우저가 제공, 어떤 이벤트가 발생했을때 함수를 호출해줘라고 브라우저에게 셋팅 가능.
 
+ajax.open('GET', NEWS_URL, false);
 ajax.send(); // 데이터 처리 => 데이터는 response에 응답에 들어있습니다.
 // console.log(ajax.response);
 // JSON.parse() 를 사용해서 json형식을 객체형식으로 변경.
@@ -133,14 +136,30 @@ var newsFeed = JSON.parse(ajax.response); // 이제 자바스크립트 객체형
 
 var ul = document.createElement('ul'); // i값이 10보다 작은동안 3번째인자인 조건식 수행.
 
-for (var i = 0; i < 10; i++) {
-  var li = document.createElement('li'); // <li>${newsFeed[i].title}</li>
+window.addEventListener('hashchange', function () {
+  var id = location.hash.substring(1);
+  ajax.open('GET', CONTENT_URL.replace('@id', id), false);
+  ajax.send();
+  var newsContent = JSON.parse(ajax.response);
+  var title = document.createElement('h1');
+  title.innerHTML = newsContent.title;
+  content.appendChild(title);
+  console.log(newsContent);
+});
 
-  li.innerHTML = newsFeed[i].title;
+for (var i = 0; i < 10; i++) {
+  var li = document.createElement('li');
+  var a = document.createElement('a');
+  a.href = "#".concat(newsFeed[i].id);
+  a.innerHTML = "".concat(newsFeed[i].title, " (").concat(newsFeed[i].comments_count, ")"); // a.addEventListener('click', function() {}); 
+  // hashchange 사용해볼 것.
+
+  li.appendChild(a);
   ul.appendChild(li);
 }
 
-document.getElementById('root').appendChild(ul); // document.getElementById('root').innerHTML =`<ul>
+container.appendChild(ul);
+container.appendChild(content); // document.getElementById('root').innerHTML =`<ul>
 // <li>${newsFeed[0].title}</li>
 // <li>${newsFeed[1].title}</li>
 // <li>${newsFeed[2].title}</li>
@@ -173,7 +192,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "51623" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "52270" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
